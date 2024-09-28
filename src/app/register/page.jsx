@@ -1,7 +1,9 @@
 "use client"
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { registerUser } from '@/service/user.service';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 import Select from 'react-select';
 
@@ -10,11 +12,12 @@ const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [repeatPassword, setRepeatPassword] = useState("");
+  const [passwordRepeat, setPasswordRepeat] = useState("");
   const [role, setRole] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [profilePictureUrl, setProfilePictureUrl] = useState("");
   const [isClient, setIsClient] = useState("");
+  const router = useRouter();
 
   const optionsRole = [
     { value: "admin", label: "Admin" },
@@ -26,18 +29,44 @@ const Register = () => {
         setIsClient(true);
   },[]);
 
-  let handleRegister = () => {
+  const handleRegister = async () => {
+    if( password !== passwordRepeat) {
+        alert("password doesn't match!");
+        return;
+    }
+
+    const userData = {
+        name,
+        email,
+        password,
+        passwordRepeat,
+        role,
+        profilePictureUrl,
+        phoneNumber,
+    };
+
+    try {
+      const response = await registerUser(userData);
+
+      if(!response) {
+        alert("Register Failed!");
+        return;
+      }
+
+      if(response?.status === "OK") {
+          router.push("/login");
+      }
+
+
+    } catch (error){
+        console.error(error.message);
+    }
+
     alert("Register Success");
-    console.log(role);
-    console.log(name);
-    console.log(email);
-    console.log(password);
-    console.log(repeatPassword);
-    console.log(profilePictureUrl);
-    console.log(phoneNumber);
+    
   };
 
-    let backgroundphoto = "bg-[url('https://images.unsplash.com/photo-1507608616759-54f48f0af0ee?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')] bg-cover h-screen rounded-lg w-full";
+    let backgroundphoto = "hidden lg:flex bg-[url('https://images.unsplash.com/photo-1507608616759-54f48f0af0ee?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')] bg-cover h-screen rounded-lg w-full";
   return (
     <div className="grid lg:flex gap-3 min-h-screen items-center justify-center p-5">
     <div className="w-full">
@@ -47,7 +76,7 @@ const Register = () => {
           <Input type="name" placeholder="Name" onChange={(e) => setName(e.target.value)}/>
           <Input type="email" placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
           <Input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)}/>
-          <Input type="passwordRepeat" placeholder="Confirm Password" onChange={(e) => setRepeatPassword(e.target.value)} />
+          <Input type="passwordRepeat" placeholder="Confirm Password" onChange={(e) => setPasswordRepeat(e.target.value)} />
           {isClient && (
               <Select 
               onChange={(event) => setRole(event.value)}
@@ -63,7 +92,6 @@ const Register = () => {
               Login
             </Link>
           </p>
-          {/* gua mute bentar yak */}
         </div>
       </div>
     </div>
